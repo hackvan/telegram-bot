@@ -5,18 +5,20 @@ module GitHubWrapper
   require 'github_api'
 
   class Issues
-    attr_accessor :id, :number, :body, :url
+    attr_accessor :id, :number, :title, :body, :url
 
-    def initialize(id:, number:, body:, url:)
+    def initialize(id:, number:, title:, body:, url:)
       @id     = id
       @number = number
+      @title  = title
       @body   = body
       @url    = url
     end
 
     def to_s
-      "id:     #{@id}\n" +
+      "issue:  #{@id}\n" +
       "number: #{@number}\n" +
+      "title:  #{@title}\n" +
       "body:   #{@body}\n" +
       "url:    #{@url}\n"
     end
@@ -32,14 +34,15 @@ module GitHubWrapper
       @issues_list   = []
     end
 
-    def get_issues
+    def get_issues(order_mode: 'asc')
       issues = @github_object.issues.list user: @username, 
                                           repo: @repository, 
                                           sort: 'created', 
-                                          direction: 'asc'
+                                          direction: order_mode
       issues.each do |issue|
         @issues_list << Issues.new(id:     issue.id, 
                                    number: issue.number,
+                                   title:  issue.title,
                                    body:   issue.body,
                                    url:    issue.url)
       end
@@ -48,7 +51,7 @@ module GitHubWrapper
   end
 end
 
-if __FILE__==$0
+if __FILE__ == $0
   issues = GitHubWrapper::GitHubConnector.new.get_issues
   issues.each do |issue|
     puts issue
