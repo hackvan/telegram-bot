@@ -1,6 +1,13 @@
 GEM
   remote: https://rubygems.org/
   specs:
+    activemodel (5.2.1)
+      activesupport (= 5.2.1)
+    activesupport (5.2.1)
+      concurrent-ruby (~> 1.0, >= 1.0.2)
+      i18n (>= 0.7, < 2)
+      minitest (~> 5.1)
+      tzinfo (~> 1.1)
     addressable (2.5.2)
       public_suffix (>= 2.0.2, < 4.0)
     axiom-types (0.1.1)
@@ -9,8 +16,11 @@ GEM
       thread_safe (~> 0.3, >= 0.3.1)
     coercible (1.0.0)
       descendants_tracker (~> 0.0.1)
+    concurrent-ruby (1.0.5)
     descendants_tracker (0.0.4)
       thread_safe (~> 0.3, >= 0.3.1)
+    domain_name (0.5.20180417)
+      unf (>= 0.0.5, < 1.0.0)
     equalizer (0.0.11)
     excon (0.62.0)
     faraday (0.12.2)
@@ -22,11 +32,22 @@ GEM
       hashie (~> 3.5, >= 3.5.2)
       oauth2 (~> 1.0)
     hashie (3.6.0)
+    http-cookie (1.0.3)
+      domain_name (~> 0.5)
+    i18n (1.1.0)
+      concurrent-ruby (~> 1.0)
     ice_nine (0.11.2)
+    json (2.1.0)
     jwt (1.5.6)
+    mime-types (3.2.2)
+      mime-types-data (~> 3.2015)
+    mime-types-data (3.2018.0812)
+    minitest (5.11.3)
     multi_json (1.13.1)
     multi_xml (0.6.0)
     multipart-post (2.0.0)
+    netrc (0.11.0)
+    oauth (0.5.4)
     oauth2 (1.4.0)
       faraday (>= 0.8, < 0.13)
       jwt (~> 1.0)
@@ -35,10 +56,25 @@ GEM
       rack (>= 1.2, < 3)
     public_suffix (3.0.3)
     rack (2.0.5)
+    rest-client (2.0.2)
+      http-cookie (>= 1.0.2, < 2.0)
+      mime-types (>= 1.16, < 4.0)
+      netrc (~> 0.8)
+    ruby-trello (2.1.0)
+      activemodel (>= 3.2.0)
+      addressable (~> 2.3)
+      json
+      oauth (>= 0.4.5)
+      rest-client (>= 1.8.0)
     telegram_bot (0.0.8)
       excon (>= 0.30.0)
       virtus (>= 1.0.0)
     thread_safe (0.3.6)
+    tzinfo (1.2.5)
+      thread_safe (~> 0.1)
+    unf (0.1.4)
+      unf_ext
+    unf_ext (0.0.7.5)
     virtus (1.0.5)
       axiom-types (~> 0.1)
       coercible (~> 1.0)
@@ -50,6 +86,7 @@ PLATFORMS
 
 DEPENDENCIES
   github_api
+  ruby-trello (~> 2.1)
   telegram_bot
 
 BUNDLED WITH
