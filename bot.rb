@@ -125,8 +125,12 @@ class TelegramScrumBot
                                     repository: @github_repository)
       message = "Incidentes registrados en: @#{github.username}/#{github.repository}:\n\n"
       github.get_issues.each do |issue|
-        message << "  issue ##{issue.number}\n  #{issue.title}\n"
-        message << "  -----\n\n"
+        if issue.instance_of?(Issue)
+          message << "  issue ##{issue.number}\n  #{issue.title}\n"
+          message << "  -----\n\n"
+        else
+          message << issue
+        end
       end
     end
     {
