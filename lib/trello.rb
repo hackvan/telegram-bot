@@ -14,7 +14,6 @@ module TrelloWrapper
   LIST_NAMES = ['Backlog', 'To Do', 'Done']
 
   class TrelloConnector
-    require_relative 'github'
     attr_reader :statistics
     
     def initialize
@@ -83,6 +82,7 @@ module TrelloWrapper
 end
 
 if __FILE__ == $0
+  require_relative 'github'
   trello = TrelloWrapper::TrelloConnector.new
   puts "Estadisticas del proceso:"
   puts "-" * 20
