@@ -117,10 +117,10 @@ class TelegramScrumBot
     elsif @github_repository.empty?
       message = "Debe indicar el repositorio de Github, puede hacerlo con /setgithubrepository"
     else
-      issues  = GitHubWrapper::GitHubConnector.new(username: @github_username, 
-                                                   repository: @github_repository)
-      message = "Incidentes registrados en: @#{issues.username}/#{issues.repository}:\n\n"
-      issues.get_issues(order_mode: 'asc').each do |issue|
+      github  = GitHubConnector.new(username: @github_username, 
+                                    repository: @github_repository)
+      message = "Incidentes registrados en: @#{github.username}/#{github.repository}:\n\n"
+      github.get_issues.each do |issue|
         message << "  issue ##{issue.number}\n  #{issue.title}\n"
         message << "  -----\n\n"
       end
