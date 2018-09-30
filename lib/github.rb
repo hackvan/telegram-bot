@@ -1,7 +1,4 @@
 module GitHubWrapper
-  GITHUB_USERNAME = 'hackvan'
-  GITHUB_REPO     = 'telegram-bot'
-
   require 'github_api'
 
   class Issues
@@ -27,7 +24,7 @@ module GitHubWrapper
   class GitHubConnector
     attr_reader :github_object, :username, :repository
     
-    def initialize(username: GITHUB_USERNAME, repository: GITHUB_REPO)
+    def initialize(username:, repository:)
       @github_object = Github.new
       @username      = username
       @repository    = repository
@@ -35,16 +32,20 @@ module GitHubWrapper
     end
 
     def get_issues(order_mode: 'asc')
-      issues = @github_object.issues.list user: @username, 
-                                          repo: @repository, 
-                                          sort: 'created', 
-                                          direction: order_mode
-      issues.each do |issue|
-        @issues_list << Issues.new(id:     issue.id, 
-                                   number: issue.number,
-                                   title:  issue.title,
-                                   body:   issue.body,
-                                   url:    issue.url)
+      begin
+        issues = @github_object.issues.list user: @username, 
+                                            repo: @repository, 
+                                            sort: 'created', 
+                                            direction: order_mode
+        issues.each do |issue|
+          @issues_list << Issues.new(id:     issue.id, 
+                                    number: issue.number,
+                                    title:  issue.title,
+                                    body:   issue.body,
+                                    url:    issue.url)
+        end
+      rescue Github::Error::NotFound => exception
+        @issues_list << "Usuario/Repositorio no encontrado"
       end
       @issues_list
     end
@@ -52,8 +53,8 @@ module GitHubWrapper
 end
 
 if __FILE__ == $0
-  issues = GitHubWrapper::GitHubConnector.new.get_issues
-  issues.each do |issue|
+  issues = GitHubWrapper::GitHubConnector.new(username: 'hackvan', repository: 'telegram-bot')
+  issues.get_issues.each do |issue|
     puts issue
     puts "-" * 80
   end
