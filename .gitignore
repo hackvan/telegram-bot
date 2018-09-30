@@ -1,3 +1,4 @@
 .ruby-version
 /.bundle
 .DS_Store
+config/secrets.yml

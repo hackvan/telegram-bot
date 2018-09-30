@@ -1,14 +1,19 @@
 module TrelloWrapper
   require 'trello'
   
-  TRELLO_DEVELOPER_PUBLIC_KEY = "a92140e65b1dfcc1732ea92fd7d245f9"
-  TRELLO_MEMBER_TOKEN = "55c9929d59625226047e258743a810d7dbba6db2b53a3678cc7454c13562a449"
+  @@trello_developer_public_key = ''
+  @@trello_member_token         = ''
 
-  Trello.configure do |config|
-    config.developer_public_key = TRELLO_DEVELOPER_PUBLIC_KEY
-    config.member_token = TRELLO_MEMBER_TOKEN
+  def self.set_tokens(key, token)
+    @@trello_developer_public_key  = key
+    @@trello_member_token          = token
+
+    Trello.configure do |config|
+      config.developer_public_key = @@trello_developer_public_key
+      config.member_token = @@trello_member_token
+    end
   end
-
+  
   BOARD_DESC = 'Handling issues from the repository'
   LIST_NAMES = ['Backlog', 'To Do', 'Done']
 
@@ -98,7 +103,10 @@ module TrelloWrapper
 end
 
 if __FILE__ == $0
+  require 'yaml'
   require_relative 'github'
+  config = YAML.load_file("./config/secrets.yml")
+  TrelloWrapper.set_tokens(config['trello']['key'], config['trello']['token'])
   trello = TrelloWrapper::TrelloConnector.new(username: 'hackvan', repository: 'telegram-bot')
   puts trello.show_statistics
 end

@@ -1,3 +1,4 @@
+require 'yaml'
 require 'telegram_bot'
 require 'logger'
 
@@ -7,8 +8,11 @@ require_relative 'lib/trello'
 class TelegramScrumBot
   attr_accessor :github_username, :github_repository
   attr_reader   :logger, :bot, :user_message
-  @@telegram_token = '639592041:AAGemO4NNgl42xgXYKXplwUz5qnqqToUNVg'
   
+  def self.set_token(token)
+    @@telegram_token = token
+  end
+
   def initialize(username:, repository:)
     @github_username   = username
     @github_repository = repository
@@ -214,6 +218,9 @@ class TelegramScrumBot
 end
 
 if __FILE__ == $0
+  config = YAML.load_file("./config/secrets.yml")
+  TelegramScrumBot.set_token(config['telegram']['token'])
+  TrelloWrapper.set_tokens(config['trello']['key'], config['trello']['token'])
   bot = TelegramScrumBot.new(username: 'hackvan', repository: 'telegram-bot')
   bot.run
 end
