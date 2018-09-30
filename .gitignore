@@ -2,3 +2,4 @@
 /.bundle
 .DS_Store
 config/secrets.yml
+telegram-scrum-bot*.gem
