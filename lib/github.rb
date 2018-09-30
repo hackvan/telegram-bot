@@ -22,7 +22,7 @@ module GitHubWrapper
   end
 
   class GitHubConnector
-    attr_reader :github_object, :username, :repository
+    attr_reader :github_object, :username, :repository, :issues_list
     
     def initialize(username:, repository:)
       @github_object = Github.new
