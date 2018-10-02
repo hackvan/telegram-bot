@@ -30,8 +30,15 @@ $ bundle exec ruby lib/telegram-bot.rb
 
 >https://rubygems.org/gems/telegram-scrum-bot
 
-To install and execute the application:
+you must setup the required enviroment variables inside `.bashrc` or `.zshrc` depend of your terminal configuration:
+```bash
+# Enviroment variables from telegram-scrum-bot gem:
+export API_TELEGRAM_TOKEN="TOKEN-INFO"
+export API_TRELLO_KEY="KEY-INFO"
+export API_TRELLO_TOKEN="TOKEN-INFO"
+```
 
+To install and execute the application:
 ```bash
 $ gem install telegram-scrum-bot
 $ telegram-scrum-bot

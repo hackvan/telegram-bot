@@ -1,10 +1,11 @@
-# lib = File.expand_path("../lib", __FILE__)
-# $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
+lib = File.expand_path("../lib", __FILE__)
+$LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
+require "telegram-bot/version"
 
 Gem::Specification.new do |spec|
   spec.name        = 'telegram-scrum-bot'
   spec.date        = '2018-09-30'
-  spec.version     = '0.0.1'
+  spec.version     = TelegramBot::VERSION
   spec.authors     = ["Diego Camacho"]
   spec.email       = 'hackvan@gmail.com'
 
