@@ -4,7 +4,7 @@ require "telegram-bot/version"
 
 Gem::Specification.new do |spec|
   spec.name        = 'telegram-scrum-bot'
-  spec.date        = '2018-09-30'
+  spec.date        = TelegramBot::RELEASE_DATE
   spec.version     = TelegramBot::VERSION
   spec.authors     = ["Diego Camacho"]
   spec.email       = 'hackvan@gmail.com'
