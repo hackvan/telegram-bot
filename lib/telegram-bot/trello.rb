@@ -1,16 +1,16 @@
 module TelegramBot
   require 'trello'
   
-  @@trello_developer_public_key = ''
-  @@trello_member_token         = ''
+  @@trello_dev_public_key = ''
+  @@trello_member_token   = ''
 
   def self.set_trello_tokens(key, token)
-    @@trello_developer_public_key  = key
-    @@trello_member_token          = token
+    @@trello_dev_public_key = key
+    @@trello_member_token   = token
 
     Trello.configure do |config|
-      config.developer_public_key = @@trello_developer_public_key
-      config.member_token = @@trello_member_token
+      config.developer_public_key = @@trello_dev_public_key
+      config.member_token         = @@trello_member_token
     end
   end
   
@@ -27,10 +27,9 @@ module TelegramBot
       @board_name        = @github_repository.split(/[-_]/i).map(&:capitalize).join(' ')
 
       @board = find_or_create_board_by_name
-      create_scrum_lists!(@board)
-      close_default_lists!(@board)
-      # archive_existing_cards!
-      populate_issues_cards!
+      create_scrum_lists(@board)
+      close_default_lists(@board)
+      populate_issues_cards
     end
 
     def show_statistics
@@ -58,7 +57,7 @@ module TelegramBot
       @board.lists.detect { |list| list.name =~ /backlog/i }
     end
 
-    def create_scrum_lists!(board)
+    def create_scrum_lists(board)
       LIST_NAMES.reverse.each do |name, index|
         list = board.lists.detect { |list| list.name =~ /#{name}/i }
         unless list 
@@ -69,7 +68,7 @@ module TelegramBot
       self
     end
 
-    def close_default_lists!(board)
+    def close_default_lists(board)
       board.lists.each do |list|
         unless LIST_NAMES.include?(list.name)
           list.update_fields(closed: true)
@@ -78,23 +77,30 @@ module TelegramBot
       end
     end
 
-    def archive_existing_cards!
+    def archive_existing_cards
       find_backlog_list.archive_all_cards
     end
 
-    def populate_issues_cards!
+    def populate_issues_cards
       backlog_list = find_backlog_list
       if backlog_list
-        github = GitHubConnector.new(username: @github_username, repository: @github_repository)
-        github.get_issues.each do |issue|
-          if issue.instance_of?(Issue)
-            card = backlog_list.cards.detect { |c| c.name =~ /^##{issue.number}\s[-]/i }
+        begin
+          github = GitHubWrapper::Repository.find(username:   @github_username, 
+                                                  repository: @github_repository)
+          github.get_issues(state: 'open').each do |issue|
+            if issue.instance_of?(GitHubWrapper::Issue)
+              card = backlog_list.cards.detect { |c| c.name =~ /^##{issue.number}\s[-]/i }
 
-            unless card
-              Trello::Card.create(name: "##{issue.number} - #{issue.title}", desc: issue.body, list_id: backlog_list.id)
-              @statistics[:cards_created] += 1
+              unless card
+                Trello::Card.create(name: "##{issue.number} - #{issue.title}", desc: issue.body, list_id: backlog_list.id)
+                @statistics[:cards_created] += 1
+              end
             end
           end
+        rescue TypeError => e
+          puts "User/Repository not found: #{e}"
+        rescue StandardError => e
+          puts "Error: #{e}"
         end
       end
       self
@@ -104,7 +110,7 @@ end
 
 if __FILE__ == $0
   require 'yaml'
-  require_relative 'github'
+  require_relative 'github_wrapper'
   config = YAML.load_file("./config/secrets.yml")
   TelegramBot.set_trello_tokens(config['trello']['key'], config['trello']['token'])
   trello = TelegramBot::TrelloConnector.new(username: 'hackvan', repository: 'telegram-bot')

@@ -2,7 +2,7 @@ require 'yaml'
 require 'telegram_bot'
 require 'logger'
 
-require_relative 'github'
+require_relative 'github_wrapper'
 require_relative 'trello'
 
 module TelegramBot
@@ -122,16 +122,23 @@ module TelegramBot
       elsif @github_repository.empty?
         message = "Debe indicar el repositorio de Github, puede hacerlo con /setgithubrepository"
       else
-        github  = GitHubConnector.new(username: @github_username, 
-                                      repository: @github_repository)
-        message = "Incidentes registrados en: @#{github.username}/#{github.repository}:\n\n"
-        github.get_issues.each do |issue|
-          if issue.instance_of?(Issue)
-            message << "  issue ##{issue.number}\n  #{issue.title}\n"
-            message << "  -----\n\n"
-          else
-            message << issue
+        begin
+          github = GitHubWrapper::Repository.find(username:   @github_username, 
+                                                  repository: @github_repository)
+
+          message = "Incidentes registrados en: @#{github.username}/#{github.repository}:\n\n"
+          github.get_issues(state: 'open').each do |issue|
+            if issue.instance_of?(GitHubWrapper::Issue)
+              message << "  issue ##{issue.number}\n  #{issue.title}\n"
+              message << "  -----\n\n"
+            else
+              message << issue
+            end
           end
+        rescue TypeError => e
+          message << "User/Repository not found: #{e}"
+        rescue StandardError => e
+          message << "Error: #{e}"
         end
       end
       {
@@ -147,7 +154,8 @@ module TelegramBot
       elsif github_repository.empty?
         message = "Debe indicar el repositorio de Github, puede hacerlo con /setgithubrepository"
       else
-        trello = TelegramBot::TrelloConnector.new(username: @github_username, repository: @github_repository)
+        trello = TelegramBot::TrelloConnector.new(username: @github_username, 
+                                                  repository: @github_repository)
         message = trello.show_statistics
       end
       {
