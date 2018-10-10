@@ -123,8 +123,10 @@ module TelegramBot
         message = "Debe indicar el repositorio de Github, puede hacerlo con /setgithubrepository"
       else
         begin
-          github = GitHubWrapper::Repository.find(username:   @github_username, 
-                                                  repository: @github_repository)
+          github = GitHubWrapper::Repository.find(
+                     username:   @github_username, 
+                     repository: @github_repository
+                   )
 
           message = "Incidentes registrados en: @#{github.username}/#{github.repository}:\n\n"
           github.get_issues(state: 'open').each do |issue|
@@ -154,8 +156,10 @@ module TelegramBot
       elsif github_repository.empty?
         message = "Debe indicar el repositorio de Github, puede hacerlo con /setgithubrepository"
       else
-        trello = TelegramBot::TrelloConnector.new(username: @github_username, 
-                                                  repository: @github_repository)
+        trello = TelegramBot::TrelloConnector.new(
+                   username: @github_username, 
+                   repository: @github_repository
+                 )
         message = trello.show_statistics
       end
       {
@@ -188,8 +192,8 @@ module TelegramBot
     def run
       @bot.get_updates(fail_silently: true) do |user_message|
         @logger.info "@#{user_message.from.username}: #{user_message.text}"
-        @user_message  = user_message
-        command        = user_message.get_command_for(@bot)
+        @user_message = user_message
+        command       = user_message.get_command_for(@bot)
         
         user_message.reply do |reply|
           case command

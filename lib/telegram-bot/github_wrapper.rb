@@ -22,25 +22,29 @@ module TelegramBot
       alias_method :private?, :private_repo
       
       # Returns the issues from a public repository
-      def get_issues(state: 'all', sort: "created", order_direction: 'asc')
+      def get_issues(state: 'all', sort: 'created', order_direction: 'asc')
         query = {
           "state"     => state,
           "sort"      => sort,
           "direction" => order_direction
         }
 
-        response = self.class.get("/#{@username}/#{@repository}/issues",
-                                  headers: @@headers,
-                                  query:   query)
+        response = self.class.get(
+          "/#{@username}/#{@repository}/issues",
+          headers: @@headers,
+          query:   query
+        )
 
         if response.success?
           JSON.parse(response.body).each do |issue|
-            @issues << Issue.new(id:     issue.fetch('id', ''),
-                                number: issue.fetch('number', ''),
-                                title:  issue.fetch('title', ''),
-                                body:   issue.fetch('body', ''),
-                                state:  issue.fetch('state', ''),
-                                url:    issue.fetch('url', ''))
+            @issues << Issue.new(
+                         id:     issue.fetch('id', ''),
+                         number: issue.fetch('number', ''),
+                         title:  issue.fetch('title', ''),
+                         body:   issue.fetch('body', ''),
+                         state:  issue.fetch('state', ''),
+                         url:    issue.fetch('url', '')
+                       )
           end
         else
           raise response.response
@@ -50,14 +54,15 @@ module TelegramBot
 
       # Find a particular repository
       def self.find(username:, repository:)
-        response = get("/#{username}/#{repository}",
-                      headers: @@headers)
+        response = get("/#{username}/#{repository}", headers: @@headers)
 
         if response.success?
-          self.new(username:     username,
-                   repository:   repository,
-                   description:  response.fetch("description", ""),
-                   private_repo: response.fetch("private", ""))
+          self.new(
+            username:     username,
+            repository:   repository,
+            description:  response.fetch("description", ""),
+            private_repo: response.fetch("private", "")
+          )
         else
           raise response.response
         end

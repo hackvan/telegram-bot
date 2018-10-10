@@ -85,14 +85,20 @@ module TelegramBot
       backlog_list = find_backlog_list
       if backlog_list
         begin
-          github = GitHubWrapper::Repository.find(username:   @github_username, 
-                                                  repository: @github_repository)
+          github = GitHubWrapper::Repository.find(
+                     username:   @github_username, 
+                     repository: @github_repository
+                   )
           github.get_issues(state: 'open').each do |issue|
             if issue.instance_of?(GitHubWrapper::Issue)
               card = backlog_list.cards.detect { |c| c.name =~ /^##{issue.number}\s[-]/i }
 
               unless card
-                Trello::Card.create(name: "##{issue.number} - #{issue.title}", desc: issue.body, list_id: backlog_list.id)
+                Trello::Card.create(
+                  name: "##{issue.number} - #{issue.title}", 
+                  desc: issue.body, 
+                  list_id: backlog_list.id
+                )
                 @statistics[:cards_created] += 1
               end
             end
