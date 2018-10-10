@@ -1,16 +1,10 @@
 module TelegramBot
   require 'trello'
   
-  @@trello_dev_public_key = ''
-  @@trello_member_token   = ''
-
   def self.set_trello_tokens(key, token)
-    @@trello_dev_public_key = key
-    @@trello_member_token   = token
-
     Trello.configure do |config|
-      config.developer_public_key = @@trello_dev_public_key
-      config.member_token         = @@trello_member_token
+      config.developer_public_key = key
+      config.member_token         = token
     end
   end
   
@@ -115,10 +109,11 @@ module TelegramBot
 end
 
 if __FILE__ == $0
-  require 'yaml'
   require_relative 'github_wrapper'
-  config = YAML.load_file("./config/secrets.yml")
-  TelegramBot.set_trello_tokens(config['trello']['key'], config['trello']['token'])
+  require 'dotenv/load'
+  API_TRELLO_KEY   = ENV['API_TRELLO_KEY']
+  API_TRELLO_TOKEN = ENV['API_TRELLO_TOKEN']
+  TelegramBot.set_trello_tokens(API_TRELLO_KEY, API_TRELLO_TOKEN)
   trello = TelegramBot::TrelloConnector.new(username: 'hackvan', repository: 'telegram-bot')
   puts trello.show_statistics
 end
