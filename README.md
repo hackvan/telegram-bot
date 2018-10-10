@@ -4,19 +4,27 @@ A friendship Telegram's bot that connect a Repository on GitHub with a Scrum boa
 
 ## Setup
 
+You must setup the required enviroment variables inside `.bashrc` or `.zshrc` depend of your terminal configuration:
+
+```bash
+# Enviroment variables from telegram-scrum-bot gem:
+export API_TELEGRAM_TOKEN="TOKEN-INFO"
+export API_TRELLO_KEY="KEY-INFO"
+export API_TRELLO_TOKEN="TOKEN-INFO"
+```
+
+Or for development create a `.env` file with the next information: 
+
+```bash
+# Enviroment variables from telegram-scrum-bot gem:
+API_TELEGRAM_TOKEN="TOKEN-INFO"
+API_TRELLO_KEY="KEY-INFO"
+API_TRELLO_TOKEN="TOKEN-INFO"
+```
+
 ### From the Github Repository:
 ```bash
 git clone https://github.com/hackvan/telegram-bot.git
-```
-
-For development you must be create the file `secrets.yml` inside the `config` directory and put the Telegram and Trello tokens information on this structure:
-
-```yaml
-telegram:
-  token: 'TOKEN-INFO'
-trello:
-  key:   'KEY-INFO'
-  token: 'TOKEN-INFO'
 ```
 
 to start the bot's server application:
@@ -29,14 +37,6 @@ $ bundle exec ruby lib/telegram-bot.rb
 ### From the [rubygems site](https://rubygems.org/gems/telegram-scrum-bot):
 
 >https://rubygems.org/gems/telegram-scrum-bot
-
-you must setup the required enviroment variables inside `.bashrc` or `.zshrc` depend of your terminal configuration:
-```bash
-# Enviroment variables from telegram-scrum-bot gem:
-export API_TELEGRAM_TOKEN="TOKEN-INFO"
-export API_TRELLO_KEY="KEY-INFO"
-export API_TRELLO_TOKEN="TOKEN-INFO"
-```
 
 To install and execute the application:
 ```bash

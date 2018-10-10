@@ -1,5 +1,5 @@
 .ruby-version
 /.bundle
 .DS_Store
-config/secrets.yml
+.env
 telegram-scrum-bot*.gem

@@ -232,9 +232,12 @@ module TelegramBot
 end
 
 if __FILE__ == $0
-  config = YAML.load_file("./config/secrets.yml")
-  TelegramBot::TelegramScrumBot.set_token(config['telegram']['token'])
-  TelegramBot::set_trello_tokens(config['trello']['key'], config['trello']['token'])
+  require 'dotenv/load'
+  API_TELEGRAM_TOKEN = ENV['API_TELEGRAM_TOKEN']
+  API_TRELLO_KEY     = ENV['API_TRELLO_KEY']
+  API_TRELLO_TOKEN   = ENV['API_TRELLO_TOKEN']
+  TelegramBot::TelegramScrumBot.set_token(API_TELEGRAM_TOKEN)
+  TelegramBot::set_trello_tokens(API_TRELLO_KEY, API_TRELLO_TOKEN)
   bot = TelegramBot::TelegramScrumBot.new(username: 'hackvan', repository: 'telegram-bot')
   bot.run
 end

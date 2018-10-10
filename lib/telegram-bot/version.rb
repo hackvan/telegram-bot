@@ -1,4 +1,4 @@
 module TelegramBot
-  VERSION      = "0.0.4".freeze
-  RELEASE_DATE = "2018-10-05".freeze
+  VERSION      = "0.0.5".freeze
+  RELEASE_DATE = "2018-10-09".freeze
 end
