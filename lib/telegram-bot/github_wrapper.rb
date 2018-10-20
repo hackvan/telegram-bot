@@ -3,11 +3,10 @@ module TelegramBot
     require 'httparty'
     class Repository
       include HTTParty
+      require_relative 'version'
 
       base_uri("https://api.github.com/repos")
-      @@headers = {
-        'User-Agent': 'telegram-scrum-bot'
-      }
+      @@headers = { 'User-Agent': "telegram-scrum-bot-#{TelegramBot::VERSION}" }
       
       attr_reader :username, :repository, :description, :private_repo, :issues
 

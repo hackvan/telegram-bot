@@ -24,24 +24,32 @@ module Trello
           desc:   json_board[:desc],
           closed: json_board[:closed] 
         )
-        board.get_lists
+        board.get_trello_lists
       end
       board
     end
 
     def self.create(name:, desc:)
-      json_board = API::post_board(name: name, desc: desc)
-      board = self.new(
-        id:     json_board[:id],
-        name:   json_board[:name],
-        desc:   json_board[:desc],
-        closed: json_board[:closed] 
-      )
-      board.close_default_lists
-      board.create_scrum_lists
+      board = self.find_by_name(name: name)
+      unless board
+        json_board = API::post_board(name: name, desc: desc)
+        board = self.new(
+          id:     json_board[:id],
+          name:   json_board[:name],
+          desc:   json_board[:desc],
+          closed: json_board[:closed] 
+        )
+        board.close_default_lists
+        board.create_scrum_lists
+      end
+      board
     end
 
-    def get_lists
+    def open_lists
+      @lists.select { |list| !list.closed }
+    end
+
+    def get_trello_lists
       self.lists = []
       API::get_lists(id_board: self.id).each do |list|
         self.lists << Trello::List.new(
@@ -50,40 +58,36 @@ module Trello
           id_board: self.id
         )
       end
-      self
+      self.open_lists
     end
 
     def create_scrum_lists
-      self.get_lists
+      self.get_trello_lists
       SCRUM_LISTS.reverse.each do |name, index|
-        list = self.lists.detect { |list| list.name =~ /#{name}/i }
-        unless list
-          json_list = API::post_list(id_board: self.id, name: name)
-          self.lists << List.new(
-            id:       json_list[:id],
-            name:     json_list[:name],
-            id_board: self.id
-          )
-        end
+        list = self.open_lists.detect { |list| list.name =~ /#{name}/i }
+        self.lists << List.create(name: name, id_board: self.id) unless list
       end
-      self
+      self.open_lists
     end
 
     def close_default_lists
-      self.get_lists
-      self.lists.delete_if do |list|
+      self.get_trello_lists.each do |list|
         unless SCRUM_LISTS.include?(list.name)
-          # Close the list in the Trello Board
-          API::put_list(id_list: list.id, closed: true)
-          true # Return true to remove from the @Lists Array.
+          list.close
         end
       end
-      self
+      # self.lists.delete_if do |list|
+      #   unless SCRUM_LISTS.include?(list.name)
+      #     API::put_list(id_list: list.id, closed: true)
+      #     true # Return true to remove from the @Lists Array.
+      #   end
+      # end
+      self.open_lists
     end
   end
 
   class List
-    attr_accessor :id, :name, :closed, :id_board
+    attr_accessor :id, :name, :closed, :id_board, :cards
 
     def initialize(id:, name:, closed: false, id_board:)
       @id       = id
@@ -91,6 +95,25 @@ module Trello
       @closed   = closed
       @id_board = id_board
       @cards    = []
+    end
+
+    def self.create(name:, id_board:)
+      json_list = API::post_list(id_board: id_board, name: name)
+      List.new(
+        id:       json_list[:id],
+        name:     json_list[:name],
+        id_board: json_list[:id_board]
+      )
+    end
+
+    def close
+      json_list = API::put_list(id_list: self.id, closed: true)
+      self.closed = true if json_list
+      self
+    end
+
+    def get_trello_cards
+      @cards
     end
   end
 
@@ -108,13 +131,12 @@ module Trello
   end
 
   module API
+    require 'dotenv/load'
     require 'httparty'
     require_relative 'version'
-    API_TRELLO_KEY   = "a92140e65b1dfcc1732ea92fd7d245f9"
-    API_TRELLO_TOKEN = "55c9929d59625226047e258743a810d7dbba6db2b53a3678cc7454c13562a449"
-
-    BOARD_DESC = 'Handling issues from the repository'
-    LIST_NAMES = ['Backlog', 'To Do', 'Done']
+    API_TRELLO_KEY   = ENV['API_TRELLO_KEY']
+    API_TRELLO_TOKEN = ENV['API_TRELLO_TOKEN']
+    BOARD_DESC       = 'Handling issues from the repository'
 
     @@base_uri    = 'https://api.trello.com/1'
     @@board_name  = 'Telegram Bot'
@@ -314,8 +336,10 @@ if __FILE__ == $0
     # puts Trello::API.post_card(id_list: "5bc0fbdc8eb4855ed50fe3e1", name: "Testing 3")
     # puts Trello::API.put_card(id_card: "5bc15e55dc6b880ae886ae6e", name: "Testing 2.1")
     # puts Trello::API.put_card(id_card: "5bc0ff79fbd3cd3ef9fd8d56", name: "Tarjeta 1.2", closed: true)
+    
+    # puts Trello::Board.find_by_name(name: "Telegram Bot").close_default_lists.inspect
+    puts Trello::Board.create(name: "Telegram Bot 2", desc: "Testing Description").inspect
 
-    puts Trello::Board.find_by_name(name: "Telegram Bot").close_default_lists.lists.inspect
   rescue Trello::API::HTTPError => error
     puts "#{Trello::API::HTTPError} - #{error.message}"
     exit 1
