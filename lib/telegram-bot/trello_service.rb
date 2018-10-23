@@ -52,11 +52,13 @@ module Trello
     def get_trello_lists
       self.lists = []
       API::get_lists(id_board: self.id).each do |list|
-        self.lists << Trello::List.new(
+        trello_list =  Trello::List.new(
           id:       list[:id],
           name:     list[:name],
           id_board: self.id
         )
+        trello_list.get_trello_cards
+        self.lists << trello_list
       end
       self.open_lists
     end
@@ -83,6 +85,10 @@ module Trello
       #   end
       # end
       self.open_lists
+    end
+
+    def find_backlog_list
+      @lists.detect { |list| list.name =~ /backlog/i }
     end
   end
 
@@ -113,7 +119,35 @@ module Trello
     end
 
     def get_trello_cards
-      @cards
+      self.cards = []
+      API::get_cards(id_list: self.id).each do |card|
+        self.cards << Trello::Card.new(
+          id:       card[:id],
+          name:     card[:name],
+          desc:     card[:desc],
+          id_board: card[:idBoard],
+          id_list:  card[:idList]
+        )
+      end
+      self.open_cards
+    end
+
+    def open_cards
+      @cards.select { |card| !card.closed }
+    end
+
+    def populate_issues_cards(issues)
+      return self.open_cards if issues.nil? || issues.empty?
+      self.get_trello_cards
+      issues.each do |issue|
+        # TODO: Verify if the issue card exists!
+        self.cards << Trello::Card.create(
+          name:    issue.fetch(:name),
+          desc:    issue.fetch(:desc),
+          id_list: self.id
+        )
+      end
+      self.open_cards
     end
   end
 
@@ -127,6 +161,23 @@ module Trello
       @closed   = closed
       @id_board = id_board
       @id_list  = id_list
+    end
+
+    def self.create(name:, desc: '', closed: false, id_list:)
+      json_card = API::post_card(id_list: id_list, name: name, desc: desc)
+      self.new(
+        id:       json_card[:id],
+        name:     json_card[:name],
+        desc:     json_card[:desc],
+        id_board: json_card[:idBoard],
+        id_list:  json_card[:idList]
+      )
+    end
+
+    def close
+      json_card = API::put_card(id_card: self.id, closed: true)
+      self.closed = true if json_card
+      self
     end
   end
 
@@ -338,7 +389,16 @@ if __FILE__ == $0
     # puts Trello::API.put_card(id_card: "5bc0ff79fbd3cd3ef9fd8d56", name: "Tarjeta 1.2", closed: true)
     
     # puts Trello::Board.find_by_name(name: "Telegram Bot").close_default_lists.inspect
-    puts Trello::Board.create(name: "Telegram Bot 2", desc: "Testing Description").inspect
+    # puts Trello::Board.create(name: "Telegram Bot", desc: "Testing Description").inspect
+
+    issues = [
+      { name: "Issue 1", desc: "Description Issue 1" },
+      { name: "Issue 2", desc: "Description Issue 2" },
+      { name: "Issue 3", desc: "Description Issue 3" },
+      { name: "Issue 4", desc: "Description Issue 4" }
+    ]
+    puts Trello::Board.find_by_name(name: "Telegram Bot").find_backlog_list.populate_issues_cards(issues).inspect
+    # puts Trello::Board.find_by_name(name: "Telegram Bot").find_backlog_list.open_cards.inspect
 
   rescue Trello::API::HTTPError => error
     puts "#{Trello::API::HTTPError} - #{error.message}"
