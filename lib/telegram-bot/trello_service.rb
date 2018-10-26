@@ -138,14 +138,19 @@ module Trello
 
     def populate_issues_cards(issues)
       return self.open_cards if issues.nil? || issues.empty?
+      
       self.get_trello_cards
+
       issues.each do |issue|
-        # TODO: Verify if the issue card exists!
-        self.cards << Trello::Card.create(
-          name:    issue.fetch(:name),
-          desc:    issue.fetch(:desc),
-          id_list: self.id
-        )
+        # Verify if the issue card exists:
+        card = self.open_cards.detect { |c| c.name =~ /^##{issue.fetch(:number)}\s[-]/i }
+        unless card 
+          self.cards << Trello::Card.create(
+            name:    "##{issue.fetch(:number)} - #{issue.fetch(:title)}",
+            desc:    issue.fetch(:body),
+            id_list: self.id
+          )
+        end
       end
       self.open_cards
     end
@@ -190,7 +195,6 @@ module Trello
     BOARD_DESC       = 'Handling issues from the repository'
 
     @@base_uri    = 'https://api.trello.com/1'
-    @@board_name  = 'Telegram Bot'
     @@headers     = { 'User-Agent': "telegram-scrum-bot-#{TelegramBot::VERSION}" }
     @@trello_auth = {
       "key"   => API_TRELLO_KEY,
@@ -389,16 +393,20 @@ if __FILE__ == $0
     # puts Trello::API.put_card(id_card: "5bc0ff79fbd3cd3ef9fd8d56", name: "Tarjeta 1.2", closed: true)
     
     # puts Trello::Board.find_by_name(name: "Telegram Bot").close_default_lists.inspect
+    # puts Trello::Board.find_by_name(name: "Telegram Bot").find_backlog_list.open_cards.inspect
     # puts Trello::Board.create(name: "Telegram Bot", desc: "Testing Description").inspect
 
     issues = [
-      { name: "Issue 1", desc: "Description Issue 1" },
-      { name: "Issue 2", desc: "Description Issue 2" },
-      { name: "Issue 3", desc: "Description Issue 3" },
-      { name: "Issue 4", desc: "Description Issue 4" }
+      { number: 1, title: "Issue", body: "Description Issue 1" },
+      { number: 2, title: "Issue", body: "Description Issue 2" },
+      { number: 3, title: "Issue", body: "Description Issue 3" },
+      { number: 4, title: "Issue", body: "Description Issue 4" }
     ]
-    puts Trello::Board.find_by_name(name: "Telegram Bot").find_backlog_list.populate_issues_cards(issues).inspect
-    # puts Trello::Board.find_by_name(name: "Telegram Bot").find_backlog_list.open_cards.inspect
+    # puts Trello::Board.find_by_name(name: "Telegram Bot").find_backlog_list.populate_issues_cards(issues).inspect
+
+    board = Trello::Board.create(name: "Telegram Bot", desc: "Testing Description")
+    open_cards = board.find_backlog_list.populate_issues_cards(issues)
+    puts open_cards.inspect
 
   rescue Trello::API::HTTPError => error
     puts "#{Trello::API::HTTPError} - #{error.message}"

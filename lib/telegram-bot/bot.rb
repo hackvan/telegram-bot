@@ -1,4 +1,3 @@
-require 'yaml'
 require 'telegram_bot'
 require 'logger'
 
@@ -108,7 +107,7 @@ module TelegramBot
     end
 
     def thanks
-      message = "You welcome!"
+      message = "Your welcome!"
       {
         bot_message:     message,
         require_answer:  false,
@@ -124,9 +123,9 @@ module TelegramBot
       else
         begin
           github = GitHubWrapper::Repository.find(
-                     username:   @github_username, 
-                     repository: @github_repository
-                   )
+            username:   @github_username, 
+            repository: @github_repository
+          )
 
           message = "Incidentes registrados en: @#{github.username}/#{github.repository}:\n\n"
           github.get_issues(state: 'open').each do |issue|
@@ -157,9 +156,9 @@ module TelegramBot
         message = "Debe indicar el repositorio de Github, puede hacerlo con /setgithubrepository"
       else
         trello = TelegramBot::TrelloConnector.new(
-                   username: @github_username, 
-                   repository: @github_repository
-                 )
+          username: @github_username, 
+          repository: @github_repository
+        )
         message = trello.show_statistics
       end
       {
@@ -183,7 +182,7 @@ module TelegramBot
       @logger.info "@#{answer.from.username}: #{answer.text}"
       result = answer.text
       answer.reply do |reply|
-        reply.text = "la configuracion ha sido actualizada a: #{result}"
+        reply.text = "la configuración ha sido actualizada a: #{result}"
         reply.send_with(bot)
       end
       result

@@ -18,6 +18,22 @@ module TelegramBot
         @issues       = []
       end
 
+      # Find a particular repository
+      def self.find(username:, repository:)
+        response = get("/#{username}/#{repository}", headers: @@headers)
+
+        if response.success?
+          self.new(
+            username:     username,
+            repository:   repository,
+            description:  response.fetch("description", ""),
+            private_repo: response.fetch("private", "")
+          )
+        else
+          raise HTTParty::Error, response.parsed_response
+        end
+      end
+      
       alias_method :private?, :private_repo
       
       # Returns the issues from a public repository
@@ -37,34 +53,18 @@ module TelegramBot
         if response.success?
           JSON.parse(response.body).each do |issue|
             @issues << Issue.new(
-                         id:     issue.fetch('id', ''),
-                         number: issue.fetch('number', ''),
-                         title:  issue.fetch('title', ''),
-                         body:   issue.fetch('body', ''),
-                         state:  issue.fetch('state', ''),
-                         url:    issue.fetch('url', '')
-                       )
+              id:     issue.fetch('id', ''),
+              number: issue.fetch('number', ''),
+              title:  issue.fetch('title', ''),
+              body:   issue.fetch('body', ''),
+              state:  issue.fetch('state', ''),
+              url:    issue.fetch('url', '')
+            )
           end
         else
-          raise response.response
+          raise HTTParty::Error, response.parsed_response
         end
         @issues
-      end
-
-      # Find a particular repository
-      def self.find(username:, repository:)
-        response = get("/#{username}/#{repository}", headers: @@headers)
-
-        if response.success?
-          self.new(
-            username:     username,
-            repository:   repository,
-            description:  response.fetch("description", ""),
-            private_repo: response.fetch("private", "")
-          )
-        else
-          raise response.response
-        end
       end
     end
 
